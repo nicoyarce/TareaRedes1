@@ -1,7 +1,5 @@
 package Redes;
 
-import java.util.ArrayList;
-
 public class Usuario {
     private String nombre;
     private String pass;
@@ -27,15 +25,11 @@ public class Usuario {
         this.pass = pass;
     }
     
-    public boolean verificarUsuario(ArrayList <Usuario> usuarios, String nombre) {
-        for (int i = 0; i < usuarios.size(); i++) {
-            if (usuarios.get(i).getNombre().equals(nombre)) {
-                System.out.println("");
-            } else {
-                
-            }
-            
-        }
-        return false;
+    public boolean verificarExistencia(String nombre) {
+        return this.nombre.equals(nombre);
+    }
+    
+    public boolean verificarClave(String clave){
+        return this.pass.equals(clave);
     }
 }

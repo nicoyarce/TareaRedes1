@@ -17,10 +17,15 @@ class TCPCliente {
         //recibir datos desde el servidor
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         
-        System.out.println("Ingrese su nombre de usuario");
+        System.out.println("Ingrese 1 si es usuario nuevo");
+        System.out.println("Ingrese 2 si es usuario existente");
         //oracion escrita por teclado es asignada a un string
         sentence = inFromUser.readLine();
         //se envia la oracion al servidor
+        outToServer.println(sentence);
+        
+        System.out.println("Ingrese su nombre de usuario");
+        sentence = inFromUser.readLine();
         outToServer.println(sentence);
         
         System.out.println("Ingrese su contraseña");

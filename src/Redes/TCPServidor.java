@@ -19,15 +19,28 @@ class TCPServidor {
             BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             //para enviar datos al cliente
             PrintWriter outToClient = new PrintWriter(connectionSocket.getOutputStream(), true);
-
-            //recibe la oracion desde el cliente y la asigna a un string
+            
+            //recibe opcion de ingreso
+            clientSentence = inFromClient.readLine();
+            int opcion = Integer.parseInt(clientSentence);
+            
             //recibe usuario
             clientSentence = inFromClient.readLine();
             
+            switch (opcion) {
+                case 1:
+                    
+                    break;
+                case 2:
+                    
+                    break;
+            }
+            
+            //recibe opcion de servicio
             clientSentence = inFromClient.readLine();
-
             switch (Integer.parseInt(clientSentence)) {
                 case 1:
+                    
                     break;
                 case 2:
                     break;

@@ -8,6 +8,11 @@ public class Usuario {
         nombre="";
         pass="";
     }
+    
+    public Usuario(String n, String p){
+        nombre=n;
+        pass=p;
+    }
 
     public String getNombre() {
         return nombre;
@@ -25,11 +30,11 @@ public class Usuario {
         this.pass = pass;
     }
     
-    public boolean verificarExistencia(String nombre) {
+    public boolean existeUsuario(String nombre) {
         return this.nombre.equals(nombre);
     }
     
-    public boolean verificarClave(String clave){
+    public boolean claveEsCorrecta(String clave){
         return this.pass.equals(clave);
     }
 }

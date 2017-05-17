@@ -37,20 +37,17 @@ class TCPServidor {
                 case 1:
                     //usuarios nuevos 
                     for (int i = 0; i < usuarios.size(); i++) {
-                        if (usuarios.get(i).existeUsuario(nombre)) {
-                            do {
-                                enviaAlCliente.println("Usuario ya existente. Ingrese otro");                                
-                                nombre = recibeDelCliente.readLine();
-                            } while (usuarios.get(i).existeUsuario(nombre));
-                            enviaAlCliente.println("Nombre disponible.");
-                            break;
-                        } else {
-                            enviaAlCliente.println("Nombre disponible.");
+                        while(usuarios.get(i).existeUsuario(nombre)){
+                            enviaAlCliente.println("Ingrese otro nombre de usuario.");
+                            nombre = recibeDelCliente.readLine();
+                            if(!usuarios.get(i).existeUsuario(nombre))
+                                break;
                         }
+                        enviaAlCliente.println("Nombre disponible.");
                     }
                     usuarios.add(new Usuario(nombre, clave, LocalDateTime.now()));
                     indiceUsuario = usuarios.size() - 1;
-                    enviaAlCliente.println("Registrado correctamente.");
+                    enviaAlCliente.println("Bienvenido " + nombre + ".");
                     break;
                 case 2:
                     //usuarios existentes
@@ -68,6 +65,9 @@ class TCPServidor {
                         }
                     }
                     break;
+                default:
+                    enviaAlCliente.println("Opcion invalida.");
+                    break;                    
             }
 
             enviaAlCliente.println("Ingrese su opcion.");
@@ -82,7 +82,7 @@ class TCPServidor {
 
             //recibe opcion de servicio
             oracionCliente = recibeDelCliente.readLine();
-            opcion = Integer.parseInt(oracionCliente);           
+            opcion = Integer.parseInt(oracionCliente);
             switch (opcion) {
                 case 1:
                     enviaAlCliente.println("La fecha es: " + obtenerFecha() + " y son las " + obtenerHora());
@@ -95,9 +95,10 @@ class TCPServidor {
                     enviaAlCliente.println("OK");
                     break;
                 case 3:
+                    enviaAlCliente.println("Los usuarios registrados son:");
                     for (int i = 0; i < usuarios.size(); i++) {
-                        String n = usuarios.get(i).getNombre();
-                        enviaAlCliente.println(n);
+                        String temp = usuarios.get(i).getNombre();
+                        enviaAlCliente.println(temp);
                     }
                     enviaAlCliente.println("OK");
                     break;
@@ -111,18 +112,20 @@ class TCPServidor {
                     enviaAlCliente.println("OK");
                     break;
                 case 7:
+                    enviaAlCliente.println("Adios " + usuarios.get(indiceUsuario).getNombre() + ".");
                     enviaAlCliente.println("OK");
                     break;
                 default:
                     enviaAlCliente.println("Ingrese una opcion valida.");
+                    enviaAlCliente.println("OK");
                     break;
             }
             //captura momento de consulta
-            if(opcion!=6)
-                capturarConsulta(indiceUsuario); 
+            if (opcion != 6) {
+                capturarConsulta(indiceUsuario);
+            }
             //linea por consola indicando quien envio que mensaje
             System.out.println(connectionSocket.getInetAddress() + " solicito una consulta tipo " + oracionCliente);
-
         }
         // si se usa una condicion para quebrar el ciclo while, se deben cerrar los sockets!
         // connectionSocket.close(); 
@@ -150,7 +153,7 @@ class TCPServidor {
         String fecha = fechaConsulta.format(formato);
         formato = DateTimeFormatter.ofPattern("HH:mm:ss");
         String hora = fechaConsulta.format(formato);
-        String fechaLista = String.join(" ","La ultima consulta fue el",fecha,"a las",hora);
+        String fechaLista = String.join(" ", "La ultima consulta fue el", fecha, "a las", hora);
         return fechaLista;
     }
 

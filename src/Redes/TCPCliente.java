@@ -17,12 +17,15 @@ class TCPCliente {
         //recibir datos desde el servidor
         BufferedReader entradaDelServidor = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-        System.out.println("Ingrese 1 si es usuario nuevo");
-        System.out.println("Ingrese 2 si es usuario existente");
-        //oracion escrita por teclado es asignada a un string        
-        oracion = entradaDelUsuario.readLine();
+              
+        //oracion escrita por teclado es asignada a un string    
+        do{
+            System.out.println("Ingrese 1 si es usuario nuevo");
+            System.out.println("Ingrese 2 si es usuario existente");
+            oracion = entradaDelUsuario.readLine();
+        }while(!oracion.equals("1") && !oracion.equals("2"));   
         alServidor.println(oracion);
-
+        
         System.out.println("Ingrese su nombre de usuario");
         oracion = entradaDelUsuario.readLine();
         alServidor.println(oracion);
@@ -31,7 +34,7 @@ class TCPCliente {
         oracion = entradaDelUsuario.readLine();
         alServidor.println(oracion);
 
-        //recibe mensajes del servidor
+        //recibe mensajes del servidor respecto al login
         echoSentence = entradaDelServidor.readLine();
         while (echoSentence.endsWith(".")) {
             echoSentence = entradaDelServidor.readLine();
@@ -41,6 +44,10 @@ class TCPCliente {
             if (echoSentence.equals("Error en clave.") || echoSentence.equals("Usuario no encontrado.")) {
                 System.exit(0);
             }
+            if (echoSentence.equals("?")){
+                oracion = entradaDelUsuario.readLine();
+                alServidor.println(oracion);
+            }
         }
 
         //lee tipo de consulta
@@ -48,7 +55,7 @@ class TCPCliente {
         oracion = entradaDelUsuario.readLine();
         alServidor.println(oracion);
 
-        //recibe informacion de la consulta
+        //recibe mensajes respecto consultas
         echoSentence = entradaDelServidor.readLine();
         while (!echoSentence.equals("OK")) {
             System.out.println("servidor> " + echoSentence);

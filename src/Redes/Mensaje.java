@@ -46,6 +46,11 @@ public class Mensaje {
     public void setMensaje(String mensaje) {
         this.mensaje = mensaje;
     }
+
+    @Override
+    public String toString() {
+        return "Mensaje:" + "Emisor:" + u1 + ", Receptor:" + u2 + ", Contenido:" + mensaje;
+    }
     
     
 }

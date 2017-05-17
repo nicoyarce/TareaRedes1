@@ -2,12 +2,11 @@ package Redes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 public class Usuario {
     private String nombre;
     private String pass;
-    private Calendar ultimaConsulta;
+    private LocalDateTime ultimaConsulta;
     private ArrayList <Mensaje> mensajes;
     
     public Usuario(){
@@ -15,9 +14,10 @@ public class Usuario {
         pass="";
     }
     
-    public Usuario(String n, String p){
+    public Usuario(String n, String p, LocalDateTime f){
         nombre=n;
         pass=p;
+        ultimaConsulta = f;
     }
 
     public String getNombre() {
@@ -35,6 +35,14 @@ public class Usuario {
     public void setPass(String pass) {
         this.pass = pass;
     }
+
+    public LocalDateTime getUltimaConsulta() {
+        return ultimaConsulta;
+    }
+
+    public void setUltimaConsulta(LocalDateTime ultimaConsulta) {
+        this.ultimaConsulta = ultimaConsulta;
+    }    
     
     public ArrayList<Mensaje> getMensajes() {
         return mensajes;
@@ -50,10 +58,5 @@ public class Usuario {
     
     public boolean claveEsCorrecta(String clave){
         return this.pass.equals(clave);
-    }
-    public static void main(String[] args) {
-        Usuario u = new Usuario();
-        System.out.println(LocalDateTime.now());
-        
-    }
+    }    
 }

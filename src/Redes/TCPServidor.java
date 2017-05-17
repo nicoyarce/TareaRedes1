@@ -3,6 +3,7 @@ package Redes;
 import java.io.*;
 import java.net.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -12,8 +13,8 @@ class TCPServidor {
     static Calendar fecha = Calendar.getInstance();
 
     public static void main(String argv[]) throws Exception {
-        int hashUsuario;
-        String clientSentence;
+        int indiceUsuario = 0;
+        String oracionCliente;
 
         ServerSocket welcomeSocket = new ServerSocket(9875);
 
@@ -25,8 +26,8 @@ class TCPServidor {
             PrintWriter enviaAlCliente = new PrintWriter(connectionSocket.getOutputStream(), true);
 
             //recibe opcion de ingreso
-            clientSentence = recibeDelCliente.readLine();
-            int opcion = Integer.parseInt(clientSentence);
+            oracionCliente = recibeDelCliente.readLine();
+            int opcion = Integer.parseInt(oracionCliente);
 
             //recibe usuario y clave
             String nombre = recibeDelCliente.readLine();
@@ -38,77 +39,119 @@ class TCPServidor {
                     for (int i = 0; i < usuarios.size(); i++) {
                         if (usuarios.get(i).existeUsuario(nombre)) {
                             do {
-                                enviaAlCliente.println("Usuario ya existente");
+                                enviaAlCliente.println("Usuario ya existente. Ingrese otro");                                
+                                nombre = recibeDelCliente.readLine();
                             } while (usuarios.get(i).existeUsuario(nombre));
-                            enviaAlCliente.println("Nombre disponible");
+                            enviaAlCliente.println("Nombre disponible.");
                             break;
                         } else {
-                            enviaAlCliente.println("Nombre disponible");
+                            enviaAlCliente.println("Nombre disponible.");
                         }
                     }
-                    usuarios.add(new Usuario(nombre, clave));
-                    enviaAlCliente.println("Registrado correctamente");
-                    enviaAlCliente.println("OK");
+                    usuarios.add(new Usuario(nombre, clave, LocalDateTime.now()));
+                    indiceUsuario = usuarios.size() - 1;
+                    enviaAlCliente.println("Registrado correctamente.");
                     break;
                 case 2:
                     //usuarios existentes
                     for (int i = 0; i < usuarios.size(); i++) {
                         if (usuarios.get(i).existeUsuario(nombre)) {
                             if (usuarios.get(i).claveEsCorrecta(clave)) {
-                                hashUsuario = usuarios.get(i).hashCode();
-                                enviaAlCliente.println("Bienvenido " + nombre);
-                                enviaAlCliente.println("OK");
+                                indiceUsuario = i;
+                                enviaAlCliente.println("Bienvenido " + nombre + ".");
                                 break;
                             } else {
-                                enviaAlCliente.println("Error en clave");
+                                enviaAlCliente.println("Error en clave.");
                             }
                         } else {
-                            enviaAlCliente.println("Usuario no encontrado");
+                            enviaAlCliente.println("Usuario no encontrado.");
                         }
                     }
                     break;
             }
-            
-            enviaAlCliente.println("Ingrese su opcion");
-            enviaAlCliente.println("1. Consultar la hora y dia actual");
-            enviaAlCliente.println("2. Consultar la hora y dia de la ultima consulta");
-            enviaAlCliente.println("3. Listar los seudonimos de los usuarios registrados");
-            enviaAlCliente.println("4. Guardar un mensaje para un usuario seleccionado");
-            enviaAlCliente.println("5. Consultar si hay algun mensaje a su nombre");
-            enviaAlCliente.println("6. Borrar registro (implica borrar seudonimo y mensajes");
-            enviaAlCliente.println("7. Finalizar sesion de consulta");
-            
+
+            enviaAlCliente.println("Ingrese su opcion.");
+            enviaAlCliente.println("1. Consultar la hora y dia actual.");
+            enviaAlCliente.println("2. Consultar la hora y dia de la ultima consulta.");
+            enviaAlCliente.println("3. Listar los seudonimos de los usuarios registrados.");
+            enviaAlCliente.println("4. Guardar un mensaje para un usuario seleccionado.");
+            enviaAlCliente.println("5. Consultar si hay algun mensaje a su nombre.");
+            enviaAlCliente.println("6. Borrar registro (implica borrar seudonimo y mensajes.");
+            enviaAlCliente.println("7. Finalizar sesion de consulta.");
+            enviaAlCliente.println("");
+
             //recibe opcion de servicio
-            clientSentence = recibeDelCliente.readLine();
-            switch (Integer.parseInt(clientSentence)) {
+            oracionCliente = recibeDelCliente.readLine();
+            opcion = Integer.parseInt(oracionCliente);           
+            switch (opcion) {
                 case 1:
-                    enviaAlCliente.println("La fecha es: " + LocalDateTime.now());
+                    enviaAlCliente.println("La fecha es: " + obtenerFecha() + " y son las " + obtenerHora());
                     enviaAlCliente.println("OK");
                     break;
                 case 2:
+                    LocalDateTime ultimaConsulta = usuarios.get(indiceUsuario).getUltimaConsulta();
+                    formatearFechaConsulta(ultimaConsulta);
+                    enviaAlCliente.println(formatearFechaConsulta(ultimaConsulta));
+                    enviaAlCliente.println("OK");
                     break;
                 case 3:
+                    for (int i = 0; i < usuarios.size(); i++) {
+                        String n = usuarios.get(i).getNombre();
+                        enviaAlCliente.println(n);
+                    }
+                    enviaAlCliente.println("OK");
                     break;
                 case 4:
                     break;
                 case 5:
                     break;
                 case 6:
+                    usuarios.remove(indiceUsuario);
+                    enviaAlCliente.println("Ha sido eliminado correctamente.");
+                    enviaAlCliente.println("OK");
                     break;
                 case 7:
+                    enviaAlCliente.println("OK");
                     break;
                 default:
+                    enviaAlCliente.println("Ingrese una opcion valida.");
                     break;
             }
-
+            //captura momento de consulta
+            if(opcion!=6)
+                capturarConsulta(indiceUsuario); 
             //linea por consola indicando quien envio que mensaje
-            System.out.println(connectionSocket.getInetAddress() + " message:" + clientSentence);
-            //envia una respuesta al cliente
-            enviaAlCliente.println(clientSentence);
+            System.out.println(connectionSocket.getInetAddress() + " solicito una consulta tipo " + oracionCliente);
+
         }
         // si se usa una condicion para quebrar el ciclo while, se deben cerrar los sockets!
         // connectionSocket.close(); 
         // welcomeSocket.close(); 
+    }
+
+    private static String obtenerHora() {
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String horaFormateada = LocalDateTime.now().format(formato);
+        return horaFormateada;
+    }
+
+    private static String obtenerFecha() {
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String fechaFormateada = LocalDateTime.now().format(formato);
+        return fechaFormateada;
+    }
+
+    private static void capturarConsulta(int indice) {
+        usuarios.get(indice).setUltimaConsulta(LocalDateTime.now());
+    }
+
+    private static String formatearFechaConsulta(LocalDateTime fechaConsulta) {
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String fecha = fechaConsulta.format(formato);
+        formato = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String hora = fechaConsulta.format(formato);
+        String fechaLista = String.join(" ","La ultima consulta fue el",fecha,"a las",hora);
+        return fechaLista;
     }
 
 }

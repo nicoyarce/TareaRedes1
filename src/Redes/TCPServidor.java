@@ -37,11 +37,12 @@ class TCPServidor {
                 case 1:
                     //usuarios nuevos 
                     for (int i = 0; i < usuarios.size(); i++) {
-                        while(usuarios.get(i).existeUsuario(nombre)){
+                        while (usuarios.get(i).existeUsuario(nombre)) {
                             enviaAlCliente.println("Ingrese otro nombre de usuario.");
                             nombre = recibeDelCliente.readLine();
-                            if(!usuarios.get(i).existeUsuario(nombre))
+                            if (!usuarios.get(i).existeUsuario(nombre)) {
                                 break;
+                            }
                         }
                         enviaAlCliente.println("Nombre disponible.");
                     }
@@ -67,7 +68,7 @@ class TCPServidor {
                     break;
                 default:
                     enviaAlCliente.println("Opcion invalida.");
-                    break;                    
+                    break;
             }
 
             enviaAlCliente.println("Ingrese su opcion.");
@@ -103,8 +104,38 @@ class TCPServidor {
                     enviaAlCliente.println("OK");
                     break;
                 case 4:
+                    String remitente,
+                     destinatario,
+                     mensaje;
+                    remitente = usuarios.get(indiceUsuario).getNombre();
+                    enviaAlCliente.println("Escriba destinatario");
+                    enviaAlCliente.println("?");
+                    destinatario = recibeDelCliente.readLine();
+                    enviaAlCliente.println("Escriba mensaje");
+                    enviaAlCliente.println("?");
+                    mensaje = recibeDelCliente.readLine();
+                    if (enviarMensaje(remitente, destinatario, mensaje)) {
+                        enviaAlCliente.println("Mensaje enviado correctamente a"
+                                + destinatario);
+                        enviaAlCliente.println("OK");
+                    } else {
+                        enviaAlCliente.println("Usuario no encontrado");
+                        enviaAlCliente.println("OK");
+                    }
                     break;
                 case 5:
+                    int cantidadMens = usuarios.get(indiceUsuario).getMensajes().size();
+                    if (cantidadMens > 0) {
+                        enviaAlCliente.println("Tiene estos mensajes a su nombre:");
+                        for (int i = 0; i < cantidadMens; i++) {
+                            String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
+                            enviaAlCliente.println(mens);
+                        }
+                        enviaAlCliente.println("OK");
+                    } else {
+                        enviaAlCliente.println("No tiene mensajes");
+                        enviaAlCliente.println("OK");
+                    }
                     break;
                 case 6:
                     usuarios.remove(indiceUsuario);
@@ -112,7 +143,7 @@ class TCPServidor {
                     enviaAlCliente.println("OK");
                     break;
                 case 7:
-                    enviaAlCliente.println("Adios " + usuarios.get(indiceUsuario).getNombre() + ".");
+                    enviaAlCliente.println("Sesion finalizada");
                     enviaAlCliente.println("OK");
                     break;
                 default:
@@ -155,6 +186,16 @@ class TCPServidor {
         String hora = fechaConsulta.format(formato);
         String fechaLista = String.join(" ", "La ultima consulta fue el", fecha, "a las", hora);
         return fechaLista;
+    }
+
+    private static boolean enviarMensaje(String rem, String dest, String mensaje) {
+        for (int i = 0; i < usuarios.size(); i++) {
+            if (usuarios.get(i).existeUsuario(dest)) {
+                usuarios.get(i).getMensajes().add(new Mensaje(rem, dest, mensaje));
+                return true;
+            }
+        }
+        return false;
     }
 
 }

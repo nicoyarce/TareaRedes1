@@ -9,47 +9,30 @@ package Redes;
  *
  * @author Nicoyarce
  */
-public class Mensaje {
-    private int id;
-    private Usuario u1;
-    private Usuario u2;
+public class Mensaje {    
+    private String remitente;
+    private String destinatario;
     private String mensaje;
-
-    public int getId() {
-        return id;
+    private boolean leido;
+    
+    public Mensaje(String r, String d, String m){
+        this.remitente=r;
+        this.destinatario=d;
+        this.mensaje=m;
+        this.leido=false;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public boolean isLeido() {
+        return leido;
     }
 
-    public Usuario getU1() {
-        return u1;
-    }
-
-    public void setU1(Usuario u1) {
-        this.u1 = u1;
-    }
-
-    public Usuario getU2() {
-        return u2;
-    }
-
-    public void setU2(Usuario u2) {
-        this.u2 = u2;
-    }
-
-    public String getMensaje() {
-        return mensaje;
-    }
-
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
+    public void setLeido(boolean leido) {
+        this.leido = leido;
     }
 
     @Override
     public String toString() {
-        return "Mensaje:" + "Emisor:" + u1 + ", Receptor:" + u2 + ", Contenido:" + mensaje;
+        return "Mensaje> " + "Remitente:" + remitente +" Contenido:" + mensaje;
     }
     
     

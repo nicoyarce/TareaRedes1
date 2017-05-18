@@ -17,15 +17,14 @@ class TCPCliente {
         //recibir datos desde el servidor
         BufferedReader entradaDelServidor = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-              
         //oracion escrita por teclado es asignada a un string    
-        do{
+        do {
             System.out.println("Ingrese 1 si es usuario nuevo");
             System.out.println("Ingrese 2 si es usuario existente");
             oracion = entradaDelUsuario.readLine();
-        }while(!oracion.equals("1") && !oracion.equals("2"));   
+        } while (!oracion.equals("1") && !oracion.equals("2"));
         alServidor.println(oracion);
-        
+
         System.out.println("Ingrese su nombre de usuario");
         oracion = entradaDelUsuario.readLine();
         alServidor.println(oracion);
@@ -44,7 +43,7 @@ class TCPCliente {
             if (echoSentence.equals("Error en clave.") || echoSentence.equals("Usuario no encontrado.")) {
                 System.exit(0);
             }
-            if (echoSentence.equals("?")){
+            if (echoSentence.equals("?")) {
                 oracion = entradaDelUsuario.readLine();
                 alServidor.println(oracion);
             }
@@ -57,9 +56,15 @@ class TCPCliente {
 
         //recibe mensajes respecto consultas
         echoSentence = entradaDelServidor.readLine();
-        while (!echoSentence.equals("OK")) {
-            System.out.println("servidor> " + echoSentence);
-            echoSentence = entradaDelServidor.readLine();
+        while (!echoSentence.equals("OK")) {            
+            if (echoSentence.equals("?")) {
+                oracion = entradaDelUsuario.readLine();
+                alServidor.println(oracion);
+            }
+            else{
+                System.out.println("servidor> " + echoSentence);
+                echoSentence = entradaDelServidor.readLine();
+            }
         }
 
         clientSocket.close();

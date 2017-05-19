@@ -7,17 +7,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-class TCPServidor {
+class Servidor {
 
     static ArrayList<Usuario> usuarios = new ArrayList<>();
     static Calendar fecha = Calendar.getInstance();
 
     public static void main(String argv[]) throws Exception {
         int indiceUsuario = 0;
+        int opcionLogin, opcionConsulta;
         String oracionCliente;
-
         ServerSocket welcomeSocket = new ServerSocket(9875);
-
         while (true) {
             Socket connectionSocket = welcomeSocket.accept();
             //para recibir datos desde el cliente
@@ -27,24 +26,27 @@ class TCPServidor {
 
             //recibe opcion de ingreso
             oracionCliente = recibeDelCliente.readLine();
-            int opcion = Integer.parseInt(oracionCliente);
+            opcionLogin = Integer.parseInt(oracionCliente);
 
             //recibe usuario y clave
             String nombre = recibeDelCliente.readLine();
             String clave = recibeDelCliente.readLine();
 
-            switch (opcion) {
+            switch (opcionLogin) {
                 case 1:
-                    //usuarios nuevos 
+                    //usuarios nuevos                     
                     for (int i = 0; i < usuarios.size(); i++) {
                         while (usuarios.get(i).existeUsuario(nombre)) {
                             enviaAlCliente.println("Ingrese otro nombre de usuario.");
+                            enviaAlCliente.println("?");
                             nombre = recibeDelCliente.readLine();
-                            if (!usuarios.get(i).existeUsuario(nombre)) {
-                                break;
-                            }
+                            enviaAlCliente.println("Ingrese clave.");
+                            enviaAlCliente.println("?");
+                            clave = recibeDelCliente.readLine();                            
                         }
-                        enviaAlCliente.println("Nombre disponible.");
+                        if (i == usuarios.size()) {
+                            enviaAlCliente.println("Nombre disponible.");
+                        }
                     }
                     usuarios.add(new Usuario(nombre, clave, LocalDateTime.now()));
                     indiceUsuario = usuarios.size() - 1;
@@ -52,6 +54,11 @@ class TCPServidor {
                     break;
                 case 2:
                     //usuarios existentes
+                    if (usuarios.isEmpty()) {
+                        enviaAlCliente.println("No hay usuarios registrados.");
+                        enviaAlCliente.println("OK");
+                        break;
+                    }
                     for (int i = 0; i < usuarios.size(); i++) {
                         if (usuarios.get(i).existeUsuario(nombre)) {
                             if (usuarios.get(i).claveEsCorrecta(clave)) {
@@ -61,17 +68,15 @@ class TCPServidor {
                             } else {
                                 enviaAlCliente.println("Error en clave.");
                             }
-                        } else {
+                        }
+                        else if (i==usuarios.size()){
                             enviaAlCliente.println("Usuario no encontrado.");
                         }
                     }
                     break;
-                default:
-                    enviaAlCliente.println("Opcion invalida.");
-                    break;
             }
 
-            enviaAlCliente.println("Ingrese su opcion.");
+            enviaAlCliente.println("///Ingrese su opcion///");
             enviaAlCliente.println("1. Consultar la hora y dia actual.");
             enviaAlCliente.println("2. Consultar la hora y dia de la ultima consulta.");
             enviaAlCliente.println("3. Listar los seudonimos de los usuarios registrados.");
@@ -79,12 +84,18 @@ class TCPServidor {
             enviaAlCliente.println("5. Consultar si hay algun mensaje a su nombre.");
             enviaAlCliente.println("6. Borrar registro (implica borrar seudonimo y mensajes.");
             enviaAlCliente.println("7. Finalizar sesion de consulta.");
-            enviaAlCliente.println("");
+            enviaAlCliente.println("///Ingrese su opcion///");
+            enviaAlCliente.println("OK");
 
-            //recibe opcion de servicio
-            oracionCliente = recibeDelCliente.readLine();
-            opcion = Integer.parseInt(oracionCliente);
-            switch (opcion) {
+            try {
+                //recibe opcion de servicio
+                oracionCliente = recibeDelCliente.readLine();
+                opcionConsulta = Integer.parseInt(oracionCliente);
+            } catch (IOException | NumberFormatException e) {
+                opcionConsulta = 7;
+            }
+
+            switch (opcionConsulta) {
                 case 1:
                     enviaAlCliente.println("La fecha es: " + obtenerFecha() + " y son las " + obtenerHora());
                     enviaAlCliente.println("OK");
@@ -115,7 +126,7 @@ class TCPServidor {
                     enviaAlCliente.println("?");
                     mensaje = recibeDelCliente.readLine();
                     if (enviarMensaje(remitente, destinatario, mensaje)) {
-                        enviaAlCliente.println("Mensaje enviado correctamente a"
+                        enviaAlCliente.println("Mensaje enviado correctamente a "
                                 + destinatario);
                         enviaAlCliente.println("OK");
                     } else {
@@ -151,12 +162,17 @@ class TCPServidor {
                     enviaAlCliente.println("OK");
                     break;
             }
-            //captura momento de consulta
-            if (opcion != 6) {
-                capturarConsulta(indiceUsuario);
+            //captura momento de consulta            
+            try {
+                if (opcionConsulta != 6) {
+                    capturarConsulta(indiceUsuario);
+                    indiceUsuario = -1;
+                }
+            } catch (Exception e) {
+                capturarConsulta(0);
             }
             //linea por consola indicando quien envio que mensaje
-            System.out.println(connectionSocket.getInetAddress() + " solicito una consulta tipo " + oracionCliente);
+            System.out.println(connectionSocket.getInetAddress() + " solicito una consulta tipo " + opcionConsulta);
         }
         // si se usa una condicion para quebrar el ciclo while, se deben cerrar los sockets!
         // connectionSocket.close(); 
@@ -176,7 +192,9 @@ class TCPServidor {
     }
 
     private static void capturarConsulta(int indice) {
-        usuarios.get(indice).setUltimaConsulta(LocalDateTime.now());
+        if (indice != 0) {
+            usuarios.get(indice).setUltimaConsulta(LocalDateTime.now());
+        }
     }
 
     private static String formatearFechaConsulta(LocalDateTime fechaConsulta) {

@@ -33,18 +33,13 @@ class TCPServidorHebraBasico extends Thread {
 
     public static void main(String argv[]) throws Exception {
         String clientSentence;
-
         ServerSocket welcomeSocket = new ServerSocket(9875);
-
         while (true) {
-
             Socket connectionSocket = welcomeSocket.accept();
-
             // crear hebra para nuevo cliente
             TCPServidorHebraBasico clienteNuevo
                     = new TCPServidorHebraBasico(connectionSocket);
             clienteNuevo.start();
-
         }
         // si se usa una condicion para quebrar el ciclo while, se deben cerrar los sockets!
         // connectionSocket.close(); 

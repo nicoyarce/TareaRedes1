@@ -32,7 +32,7 @@ public class Mensaje {
 
     @Override
     public String toString() {
-        return "Mensaje> " + "Remitente:" + remitente +" Contenido:" + mensaje;
+        return "Mensaje> " + "Remitente: " + remitente +" Contenido: " + mensaje;
     }
     
     

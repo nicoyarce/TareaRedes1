@@ -3,7 +3,7 @@ package Redes;
 import java.io.*;
 import java.net.*;
 
-class TCPCliente {
+class Cliente {
 
     public static void main(String argv[]) throws Exception {
         String oracion;
@@ -17,54 +17,60 @@ class TCPCliente {
         //recibir datos desde el servidor
         BufferedReader entradaDelServidor = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-        //oracion escrita por teclado es asignada a un string    
+        //validacion por tipo de usuario    
         do {
-            System.out.println("Ingrese 1 si es usuario nuevo");
-            System.out.println("Ingrese 2 si es usuario existente");
+            System.out.println("Ingrese 1 si es usuario nuevo.");
+            System.out.println("Ingrese 2 si es usuario existente.");
             oracion = entradaDelUsuario.readLine();
+            if (!oracion.equals("1") && !oracion.equals("2")) {
+                System.out.println("Ingrese opcion valida.");
+            }
         } while (!oracion.equals("1") && !oracion.equals("2"));
         alServidor.println(oracion);
 
-        System.out.println("Ingrese su nombre de usuario");
+        System.out.println("Ingrese su nombre de usuario.");
         oracion = entradaDelUsuario.readLine();
         alServidor.println(oracion);
 
-        System.out.println("Ingrese su contraseña");
+        System.out.println("Ingrese su contraseña.");
         oracion = entradaDelUsuario.readLine();
         alServidor.println(oracion);
 
-        //recibe mensajes del servidor respecto al login
+        //recibe mensajes del servidor respecto al login       
         echoSentence = entradaDelServidor.readLine();
-        while (echoSentence.endsWith(".")) {
-            echoSentence = entradaDelServidor.readLine();
-            if (!echoSentence.equals("")) {
-                System.out.println("servidor> " + echoSentence);
-            }
-            if (echoSentence.equals("Error en clave.") || echoSentence.equals("Usuario no encontrado.")) {
+        while (!echoSentence.equals("OK")) {
+            if (echoSentence.equals("Error en clave.")
+                    || echoSentence.equals("Usuario no encontrado.")
+                    || echoSentence.equals("No hay usuarios registrados.")) {
+                System.out.println(echoSentence);
+                clientSocket.close();
                 System.exit(0);
             }
             if (echoSentence.equals("?")) {
                 oracion = entradaDelUsuario.readLine();
                 alServidor.println(oracion);
             }
+            if (!echoSentence.equals("?")) {
+                System.out.println("servidor> " + echoSentence);
+            }
+            echoSentence = entradaDelServidor.readLine();
         }
 
         //lee tipo de consulta
-        System.out.println("Ingrese su opcion.");
         oracion = entradaDelUsuario.readLine();
         alServidor.println(oracion);
 
         //recibe mensajes respecto consultas
         echoSentence = entradaDelServidor.readLine();
-        while (!echoSentence.equals("OK")) {            
+        while (!echoSentence.equals("OK")) {
             if (echoSentence.equals("?")) {
                 oracion = entradaDelUsuario.readLine();
                 alServidor.println(oracion);
             }
-            else{
+            if (!echoSentence.equals("?")) {
                 System.out.println("servidor> " + echoSentence);
-                echoSentence = entradaDelServidor.readLine();
             }
+            echoSentence = entradaDelServidor.readLine();
         }
 
         clientSocket.close();

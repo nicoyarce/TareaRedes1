@@ -16,7 +16,7 @@ class Servidor {
         int indiceUsuario = 0;
         int opcionLogin, opcionConsulta;
         String oracionCliente;
-        ServerSocket welcomeSocket = new ServerSocket(9875);
+        ServerSocket welcomeSocket = new ServerSocket(7777);
         while (true) {
             Socket connectionSocket = welcomeSocket.accept();
             //para recibir datos desde el cliente
@@ -42,7 +42,7 @@ class Servidor {
                             nombre = recibeDelCliente.readLine();
                             enviaAlCliente.println("Ingrese clave.");
                             enviaAlCliente.println("?");
-                            clave = recibeDelCliente.readLine();                            
+                            clave = recibeDelCliente.readLine();
                         }
                         if (i == usuarios.size()) {
                             enviaAlCliente.println("Nombre disponible.");
@@ -68,8 +68,7 @@ class Servidor {
                             } else {
                                 enviaAlCliente.println("Error en clave.");
                             }
-                        }
-                        else if (i==usuarios.size()){
+                        } else if (i == usuarios.size()) {
                             enviaAlCliente.println("Usuario no encontrado.");
                         }
                     }
@@ -80,11 +79,10 @@ class Servidor {
             enviaAlCliente.println("1. Consultar la hora y dia actual.");
             enviaAlCliente.println("2. Consultar la hora y dia de la ultima consulta.");
             enviaAlCliente.println("3. Listar los seudonimos de los usuarios registrados.");
-            enviaAlCliente.println("4. Guardar un mensaje para un usuario seleccionado.");
+            enviaAlCliente.println("4. Enviar un mensaje a un usuario.");
             enviaAlCliente.println("5. Consultar si hay algun mensaje a su nombre.");
             enviaAlCliente.println("6. Borrar registro (implica borrar seudonimo y mensajes.");
             enviaAlCliente.println("7. Finalizar sesion de consulta.");
-            enviaAlCliente.println("///Ingrese su opcion///");
             enviaAlCliente.println("OK");
 
             try {
@@ -92,6 +90,7 @@ class Servidor {
                 oracionCliente = recibeDelCliente.readLine();
                 opcionConsulta = Integer.parseInt(oracionCliente);
             } catch (IOException | NumberFormatException e) {
+                //en caso de tener problemas al parsear se fija una opcion 7 para salir
                 opcionConsulta = 7;
             }
 
@@ -107,12 +106,7 @@ class Servidor {
                     enviaAlCliente.println("OK");
                     break;
                 case 3:
-                    enviaAlCliente.println("Los usuarios registrados son:");
-                    for (int i = 0; i < usuarios.size(); i++) {
-                        String temp = usuarios.get(i).getNombre();
-                        enviaAlCliente.println(temp);
-                    }
-                    enviaAlCliente.println("OK");
+                    listarUsuarios(enviaAlCliente);
                     break;
                 case 4:
                     String remitente,
@@ -137,12 +131,19 @@ class Servidor {
                 case 5:
                     int cantidadMens = usuarios.get(indiceUsuario).getMensajes().size();
                     if (cantidadMens > 0) {
-                        enviaAlCliente.println("Tiene estos mensajes a su nombre:");
-                        for (int i = 0; i < cantidadMens; i++) {
-                            String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
-                            enviaAlCliente.println(mens);
-                        }
-                        enviaAlCliente.println("OK");
+                        enviaAlCliente.println("Tiene "+cantidadMens+" mensaje(s).");
+                        enviaAlCliente.println("Ingrese opcion de cuales mensajes desea mostrar.");
+                        enviaAlCliente.println("1. Los 5 primeros (mas antiguos).");
+                        enviaAlCliente.println("2. Los 5 ultimos (mas nuevos).");
+                        enviaAlCliente.println("3. Todos");
+                        enviaAlCliente.println("?");
+                        int opcionMensajes=0;
+                        try {
+                            opcionMensajes = Integer.parseInt(recibeDelCliente.readLine());
+                        } catch (Exception e) {
+                            opcionMensajes=0;
+                        }                        
+                        listarMensajes(opcionMensajes, enviaAlCliente, indiceUsuario, cantidadMens);
                     } else {
                         enviaAlCliente.println("No tiene mensajes");
                         enviaAlCliente.println("OK");
@@ -164,6 +165,8 @@ class Servidor {
             }
             //captura momento de consulta            
             try {
+                /*verifica si el usuario elimino su cuenta
+                para no guardar la fecha y hora de consulta*/
                 if (opcionConsulta != 6) {
                     capturarConsulta(indiceUsuario);
                     indiceUsuario = -1;
@@ -172,7 +175,7 @@ class Servidor {
                 capturarConsulta(0);
             }
             //linea por consola indicando quien envio que mensaje
-            System.out.println(connectionSocket.getInetAddress() + " solicito una consulta tipo " + opcionConsulta);
+            System.out.println(connectionSocket.getInetAddress() + " - " + nombre + " solicito una consulta tipo " + opcionConsulta);
         }
         // si se usa una condicion para quebrar el ciclo while, se deben cerrar los sockets!
         // connectionSocket.close(); 
@@ -214,6 +217,65 @@ class Servidor {
             }
         }
         return false;
+    }
+
+    private static void listarUsuarios(PrintWriter enviaAlCliente) {
+        enviaAlCliente.println("Los usuarios registrados son:");
+        for (int i = 0; i < usuarios.size(); i++) {
+            String temp = usuarios.get(i).getNombre();
+            enviaAlCliente.println(temp);
+        }
+        enviaAlCliente.println("OK");
+    }
+
+    private static void listarMensajes(int opcionMensajes,
+        PrintWriter enviaAlCliente, int indiceUsuario, int cantidadMens) {
+        
+        switch (opcionMensajes) {
+            case 1:
+                enviaAlCliente.println("Los 5 primeros mensajes (mas antiguos):");
+                if (cantidadMens < 5) {
+                    for (int i = 0; i < cantidadMens; i++) {
+                        String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
+                        enviaAlCliente.println(mens);
+                    }
+                } else {
+                    for (int i = 0; i < 5; i++) {
+                        String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
+                        enviaAlCliente.println(mens);
+                    }
+                }
+                enviaAlCliente.println("OK");
+                break;
+            case 2:
+                enviaAlCliente.println("Los 5 ultimos mensajes (mas nuevos):");
+                if (cantidadMens < 5) {
+                    for (int i = 0; i < cantidadMens; i++) {
+                        String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
+                        enviaAlCliente.println(mens);
+                    }
+                } else {
+                    for (int i = cantidadMens - 5; i < cantidadMens; i++) {
+                        String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
+                        enviaAlCliente.println(mens);
+                    }
+                }
+                enviaAlCliente.println("OK");
+                break;
+            case 3:
+                enviaAlCliente.println("Tiene todos estos mensajes a su nombre:");
+                for (int i = 0; i < cantidadMens; i++) {
+                    String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
+                    enviaAlCliente.println(mens);
+                }
+                enviaAlCliente.println("OK");
+                break;
+            default:
+                enviaAlCliente.println("Debe ingresar una opcion valida");
+                enviaAlCliente.println("OK");
+                break;
+        }
+
     }
 
 }

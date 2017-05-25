@@ -17,7 +17,7 @@ class Cliente {
             PrintWriter alServidor = new PrintWriter(clientSocket.getOutputStream(), true);
             //recibir datos desde el servidor
             BufferedReader entradaDelServidor = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            
+
             //validacion por tipo de usuario
             do {
                 System.out.println("Ingrese 1 si es usuario nuevo.");
@@ -28,15 +28,15 @@ class Cliente {
                 }
             } while (!oracion.equals("1") && !oracion.equals("2"));
             alServidor.println(oracion);
-            
+
             System.out.println("Ingrese su nombre de usuario.");
             oracion = entradaDelUsuario.readLine();
             alServidor.println(oracion);
-            
+
             System.out.println("Ingrese su contraseña.");
             oracion = entradaDelUsuario.readLine();
             alServidor.println(oracion);
-            
+
             //recibe mensajes del servidor respecto al login
             echoSentence = entradaDelServidor.readLine();
             while (!echoSentence.equals("OK")) {
@@ -56,7 +56,7 @@ class Cliente {
                 }
                 echoSentence = entradaDelServidor.readLine();
             }
-            
+
             //lee tipo de consulta
             int opcion;
             do {
@@ -64,23 +64,28 @@ class Cliente {
                 oracion = entradaDelUsuario.readLine();
                 try {
                     opcion = Integer.parseInt(oracion);
-                    if(opcion<=0 || opcion >=8){
-                        opcion=-1;
+                    if (opcion <= 0 || opcion >= 8) {
+                        opcion = -1;
                         System.out.println("Ingrese del 1 al 7");
                     }
                 } catch (NumberFormatException e) {
-                    opcion=-1;
+                    opcion = -1;
                     System.out.println("Ingrese del 1 al 7");
                 }
-            } while (opcion<=0 || opcion>=8);
-            
+            } while (opcion <= 0 || opcion >= 8);
+
             alServidor.println(oracion);
-            
+
             //recibe respuestas respecto consultas
             echoSentence = entradaDelServidor.readLine();
             while (!echoSentence.equals("OK")) {
                 if (echoSentence.equals("?")) {
-                    oracion = entradaDelUsuario.readLine();
+                    do {
+                        oracion = entradaDelUsuario.readLine();
+                        if (oracion.length() > 30) {
+                            System.out.println("Ingrese menos de 30 caracteres");
+                        }
+                    } while (oracion.length() > 30);
                     alServidor.println(oracion);
                 }
                 if (!echoSentence.equals("?")) {

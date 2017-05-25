@@ -1,6 +1,5 @@
 package Redes;
 
-import static Redes.Servidor.usuarios;
 import java.io.*;
 import java.net.*;
 import java.time.LocalDateTime;
@@ -27,12 +26,12 @@ class ServidorHebraBasico extends Thread {
     }
 
     public void run() {
-        int indiceUsuario = 0;
-        int opcionLogin, opcionConsulta;
-        String oracionCliente;
         while (true) {
+            int indiceUsuario = 0;
+            int opcionLogin, opcionConsulta;
+            String oracionCliente;
             try {
-            //recibe opcion de ingreso
+                //recibe opcion de ingreso
             oracionCliente = recibeDelCliente.readLine();
             opcionLogin = Integer.parseInt(oracionCliente);
 
@@ -138,19 +137,61 @@ class ServidorHebraBasico extends Thread {
                     break;
                 case 5:
                     int cantidadMens = usuarios.get(indiceUsuario).getMensajes().size();
+                    int cantidadMostrada = 0;
+                    int opcionMensajes = 0;
+                    String opcionEliminar = "n";
                     if (cantidadMens > 0) {
-                        enviaAlCliente.println("Tiene "+cantidadMens+" mensaje(s).");
-                        enviaAlCliente.println("Ingrese opcion de cuales mensajes desea mostrar.");
-                        enviaAlCliente.println("1. Los 5 primeros (mas antiguos).");
-                        enviaAlCliente.println("2. Los 5 ultimos (mas nuevos).");
-                        enviaAlCliente.println("3. Todos");
-                        enviaAlCliente.println("?");
-                        int opcionMensajes = Integer.parseInt(recibeDelCliente.readLine());
-                        listarMensajes(opcionMensajes, enviaAlCliente, indiceUsuario, cantidadMens);
+                        enviaAlCliente.println("Tiene " + cantidadMens + " mensaje(s).");
+                        //consulta por la cantidad de mensajes que se mostraran
+                        do {
+                            enviaAlCliente.println("Ingrese opcion de cuantos mensajes desea mostrar.");
+                            enviaAlCliente.println("?");
+                            try {
+                                cantidadMostrada = Integer.parseInt(recibeDelCliente.readLine());
+                                if (cantidadMostrada <= 0 || cantidadMostrada > cantidadMens) {
+                                    enviaAlCliente.println("Ingrese opcion valida.");
+                                }
+                            } catch (IOException | NumberFormatException e) {
+                                enviaAlCliente.println("Ingrese opcion valida.");
+                            }
+
+                        } while (cantidadMostrada <= 0 || cantidadMostrada > cantidadMens);
+                        //consulta por cuales mensajes mostrara
+                        do {
+                            if (cantidadMens == cantidadMostrada) {
+                                opcionMensajes = 3;
+                                break;
+                            }
+                            enviaAlCliente.println("Ingrese opcion de cuales mensajes desea mostrar.");
+                            enviaAlCliente.println("1. El/Los " + cantidadMostrada + " primero(s) (mas antiguo(s)).");
+                            enviaAlCliente.println("2. El/Los " + cantidadMostrada + " ultimo(s) (mas nuevo(s)).");
+                            enviaAlCliente.println("?");
+                            try {
+                                opcionMensajes = Integer.parseInt(recibeDelCliente.readLine());
+                                if (opcionMensajes != 1 && opcionMensajes != 2) {
+                                    enviaAlCliente.println("Ingrese opcion valida.");
+                                }
+                            } catch (IOException | NumberFormatException e) {
+                                enviaAlCliente.println("Ingrese opcion valida");
+                            }
+
+                        } while (opcionMensajes != 1 && opcionMensajes != 2);
+                        listarMensajes(cantidadMostrada, opcionMensajes, enviaAlCliente, indiceUsuario, cantidadMens);
                     } else {
                         enviaAlCliente.println("No tiene mensajes");
                         enviaAlCliente.println("OK");
                     }
+                    do {
+                        enviaAlCliente.println("Desea eliminar los mensajes que leyo (S/N)");
+                        enviaAlCliente.println("?");
+                        opcionEliminar = recibeDelCliente.readLine();
+                    } while (!opcionEliminar.equals("S") && !opcionEliminar.equals("s") 
+                            && !opcionEliminar.equals("N") && !opcionEliminar.equals("n"));
+                    
+                    if (opcionEliminar.equals("S") || opcionEliminar.equals("s")) {
+                        eliminarMensajes(cantidadMostrada, opcionMensajes, indiceUsuario, cantidadMens);
+                    }
+                    enviaAlCliente.println("OK");
                     break;
                 case 6:
                     usuarios.remove(indiceUsuario);
@@ -246,39 +287,37 @@ class ServidorHebraBasico extends Thread {
         enviaAlCliente.println("OK");
     }
 
-    private static void listarMensajes(int opcionMensajes,
+    private static void listarMensajes(int cantidadAImprimir, int opcionMensajes,
             PrintWriter enviaAlCliente, int indiceUsuario, int cantidadMens) {
 
         switch (opcionMensajes) {
             case 1:
-                enviaAlCliente.println("Los 5 primeros mensajes (mas antiguos):");
-                if (cantidadMens < 5) {
+                enviaAlCliente.println("El/Los " + cantidadAImprimir + " primer(os) mensaje(s)(mas antiguo(s)):");
+                if (cantidadMens < cantidadAImprimir) {
                     for (int i = 0; i < cantidadMens; i++) {
                         String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                         enviaAlCliente.println(mens);
                     }
                 } else {
-                    for (int i = 0; i < 5; i++) {
+                    for (int i = 0; i < cantidadAImprimir; i++) {
                         String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                         enviaAlCliente.println(mens);
                     }
                 }
-                enviaAlCliente.println("OK");
                 break;
             case 2:
-                enviaAlCliente.println("Los 5 ultimos mensajes (mas nuevos):");
-                if (cantidadMens < 5) {
+                enviaAlCliente.println("El/Los" + cantidadAImprimir + " ultimo(s) mensaje(s)(mas nuevo(s)):");
+                if (cantidadMens < cantidadAImprimir) {
                     for (int i = 0; i < cantidadMens; i++) {
                         String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                         enviaAlCliente.println(mens);
                     }
                 } else {
-                    for (int i = cantidadMens - 5; i < cantidadMens; i++) {
+                    for (int i = cantidadMens - cantidadAImprimir; i < cantidadAImprimir; i++) {
                         String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                         enviaAlCliente.println(mens);
                     }
                 }
-                enviaAlCliente.println("OK");
                 break;
             case 3:
                 enviaAlCliente.println("Tiene todos estos mensajes a su nombre:");
@@ -286,7 +325,6 @@ class ServidorHebraBasico extends Thread {
                     String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                     enviaAlCliente.println(mens);
                 }
-                enviaAlCliente.println("OK");
                 break;
             default:
                 enviaAlCliente.println("Debe ingresar una opcion valida");
@@ -294,5 +332,38 @@ class ServidorHebraBasico extends Thread {
                 break;
         }
 
+    }
+
+    private static void eliminarMensajes(int cantidadAImprimir, int opcionMensajes,
+            int indiceUsuario, int cantidadMens) {
+        switch (opcionMensajes) {
+            case 1:
+                if (cantidadMens < cantidadAImprimir) {
+                    for (int i = 0; i < cantidadMens; i++) {
+                        usuarios.get(indiceUsuario).getMensajes().remove(i);
+                    }
+                } else {
+                    for (int i = 0; i < cantidadAImprimir; i++) {
+                        usuarios.get(indiceUsuario).getMensajes().remove(i);
+                    }
+                }
+                break;
+            case 2:
+                if (cantidadMens < cantidadAImprimir) {
+                    for (int i = 0; i < cantidadMens; i++) {
+                        usuarios.get(indiceUsuario).getMensajes().remove(i);
+                    }
+                } else {
+                    for (int i = cantidadMens - cantidadAImprimir; i < cantidadAImprimir; i++) {
+                        usuarios.get(indiceUsuario).getMensajes().remove(i);
+                    }
+                }
+                break;
+            case 3:
+                for (int i = 0; i < cantidadMens; i++) {
+                    usuarios.get(indiceUsuario).getMensajes().remove(i);
+                }
+                break;
+        }
     }
 }

@@ -13,7 +13,7 @@ public class Mensaje {
     private String remitente;
     private String destinatario;
     private String mensaje;
-    private boolean leido;
+    private boolean leido; //no utlizado
     
     public Mensaje(String r, String d, String m){
         this.remitente=r;

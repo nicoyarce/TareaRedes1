@@ -130,20 +130,35 @@ class Servidor {
                     break;
                 case 5:
                     int cantidadMens = usuarios.get(indiceUsuario).getMensajes().size();
+                    int cantidadMostrada;
                     if (cantidadMens > 0) {
-                        enviaAlCliente.println("Tiene "+cantidadMens+" mensaje(s).");
+                        enviaAlCliente.println("Tiene " + cantidadMens + " mensaje(s).");
+                        do {
+                            enviaAlCliente.println("Ingrese opcion de cuantos mensajes desea mostrar.");
+                            enviaAlCliente.println("?");
+                            try {
+                                cantidadMostrada = Integer.parseInt(recibeDelCliente.readLine());
+                            } catch (IOException | NumberFormatException e) {
+                                System.out.println("Ingrese opcion valida");
+                                break;
+                            }
+                            if () {
+                                System.out.println("Ingrese opcion valida.");
+                            }
+                        } while ();
                         enviaAlCliente.println("Ingrese opcion de cuales mensajes desea mostrar.");
-                        enviaAlCliente.println("1. Los 5 primeros (mas antiguos).");
-                        enviaAlCliente.println("2. Los 5 ultimos (mas nuevos).");
+                        enviaAlCliente.println("1. Los " + cantidadMostrada + " primeros (mas antiguos).");
+                        enviaAlCliente.println("2. Los " + cantidadMostrada + " ultimos (mas nuevos).");
                         enviaAlCliente.println("3. Todos");
                         enviaAlCliente.println("?");
-                        int opcionMensajes=0;
+                        int opcionMensajes;
                         try {
                             opcionMensajes = Integer.parseInt(recibeDelCliente.readLine());
-                        } catch (Exception e) {
-                            opcionMensajes=0;
-                        }                        
-                        listarMensajes(opcionMensajes, enviaAlCliente, indiceUsuario, cantidadMens);
+                        } catch (IOException | NumberFormatException e) {
+                            System.out.println("Ingrese opcion valida");
+                            break;
+                        }
+                        listarMensajes(cantidadMostrada, opcionMensajes, enviaAlCliente, indiceUsuario, cantidadMens);
                     } else {
                         enviaAlCliente.println("No tiene mensajes");
                         enviaAlCliente.println("OK");
@@ -228,19 +243,19 @@ class Servidor {
         enviaAlCliente.println("OK");
     }
 
-    private static void listarMensajes(int opcionMensajes,
-        PrintWriter enviaAlCliente, int indiceUsuario, int cantidadMens) {
-        
+    private static void listarMensajes(int cantidadAImprimir, int opcionMensajes,
+            PrintWriter enviaAlCliente, int indiceUsuario, int cantidadMens) {
+
         switch (opcionMensajes) {
             case 1:
-                enviaAlCliente.println("Los 5 primeros mensajes (mas antiguos):");
-                if (cantidadMens < 5) {
+                enviaAlCliente.println("Los " + cantidadAImprimir + " primeros mensajes (mas antiguos):");
+                if (cantidadMens < cantidadAImprimir) {
                     for (int i = 0; i < cantidadMens; i++) {
                         String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                         enviaAlCliente.println(mens);
                     }
                 } else {
-                    for (int i = 0; i < 5; i++) {
+                    for (int i = 0; i < cantidadAImprimir; i++) {
                         String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                         enviaAlCliente.println(mens);
                     }
@@ -248,14 +263,14 @@ class Servidor {
                 enviaAlCliente.println("OK");
                 break;
             case 2:
-                enviaAlCliente.println("Los 5 ultimos mensajes (mas nuevos):");
-                if (cantidadMens < 5) {
+                enviaAlCliente.println("Los " + cantidadAImprimir + " ultimos mensajes (mas nuevos):");
+                if (cantidadMens < cantidadAImprimir) {
                     for (int i = 0; i < cantidadMens; i++) {
                         String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                         enviaAlCliente.println(mens);
                     }
                 } else {
-                    for (int i = cantidadMens - 5; i < cantidadMens; i++) {
+                    for (int i = cantidadMens - cantidadAImprimir; i < cantidadAImprimir; i++) {
                         String mens = usuarios.get(indiceUsuario).getMensajes().get(i).toString();
                         enviaAlCliente.println(mens);
                     }

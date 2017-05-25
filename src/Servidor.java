@@ -1,4 +1,4 @@
-package Redes;
+
 
 import java.io.*;
 import java.net.*;
@@ -7,31 +7,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-class ServidorHebraBasico extends Thread {
+class Servidor {
 
-    BufferedReader recibeDelCliente;
-    PrintWriter enviaAlCliente;
-    Socket connectionSocket;
     static ArrayList<Usuario> usuarios = new ArrayList<>();
     static Calendar fecha = Calendar.getInstance();
 
-    public ServidorHebraBasico(Socket s) {
-        connectionSocket = s;
-        try {
-            recibeDelCliente = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            enviaAlCliente = new PrintWriter(connectionSocket.getOutputStream(), true);
-        } catch (IOException e) {
-            System.out.println("Problema creacion socket");
-        }
-    }
-
-    public void run() {
+    public static void main(String argv[]) throws Exception {
+        ServerSocket welcomeSocket = new ServerSocket(7777);
         while (true) {
             int indiceUsuario = 0;
             int opcionLogin, opcionConsulta;
             String oracionCliente;
-            try {
-                //recibe opcion de ingreso
+
+            Socket connectionSocket = welcomeSocket.accept();
+            //para recibir datos desde el cliente
+            BufferedReader recibeDelCliente = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            //para enviar datos al cliente
+            PrintWriter enviaAlCliente = new PrintWriter(connectionSocket.getOutputStream(), true);
+
+            //recibe opcion de ingreso
             oracionCliente = recibeDelCliente.readLine();
             opcionLogin = Integer.parseInt(oracionCliente);
 
@@ -220,21 +214,6 @@ class ServidorHebraBasico extends Thread {
             }
             //linea por consola indicando quien envio que mensaje
             System.out.println(connectionSocket.getInetAddress() + " - " + nombre + " solicito una consulta tipo " + opcionConsulta);
-            } catch (IOException ex) {
-                System.out.println("Problema lectura/escritura en socket");
-            }
-        }
-    }
-
-    public static void main(String argv[]) throws Exception {
-        String clientSentence;
-        ServerSocket welcomeSocket = new ServerSocket(7777);
-        while (true) {
-            Socket connectionSocket = welcomeSocket.accept();
-            // crear hebra para nuevo cliente
-            ServidorHebraBasico clienteNuevo
-                    = new ServidorHebraBasico(connectionSocket);
-            clienteNuevo.start();
         }
         // si se usa una condicion para quebrar el ciclo while, se deben cerrar los sockets!
         // connectionSocket.close(); 
@@ -366,4 +345,5 @@ class ServidorHebraBasico extends Thread {
                 break;
         }
     }
+
 }

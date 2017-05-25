@@ -1,5 +1,3 @@
-
-
 import java.io.*;
 import java.net.*;
 import java.time.LocalDateTime;
@@ -138,7 +136,7 @@ class Servidor {
                         enviaAlCliente.println("Tiene " + cantidadMens + " mensaje(s).");
                         //consulta por la cantidad de mensajes que se mostraran
                         do {
-                            enviaAlCliente.println("Ingrese opcion de cuantos mensajes desea mostrar.");
+                            enviaAlCliente.println("Ingrese cuantos mensajes desea mostrar.");
                             enviaAlCliente.println("?");
                             try {
                                 cantidadMostrada = Integer.parseInt(recibeDelCliente.readLine());

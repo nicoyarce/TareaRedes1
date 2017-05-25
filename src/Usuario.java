@@ -18,7 +18,7 @@ public class Usuario {
         nombre=n;
         pass=p;
         ultimaConsulta = f;
-        mensajes = new ArrayList();
+        mensajes = new ArrayList<Mensaje>();
     }
 
     public String getNombre() {

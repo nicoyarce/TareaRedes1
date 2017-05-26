@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.net.*;
 
@@ -6,10 +7,10 @@ class Cliente {
     public static void main(String argv[]) throws Exception {
         String oracion;
         String echoSentence;
+        int opcion;
 
         //fijar entrada por teclado
         BufferedReader entradaDelUsuario = new BufferedReader(new InputStreamReader(System.in));
-        //enviar datos al servidor
         Socket clientSocket = new Socket("127.0.0.1", 7777);
         //enviar datos al servidor
         PrintWriter alServidor = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -55,8 +56,7 @@ class Cliente {
             echoSentence = entradaDelServidor.readLine();
         }
 
-        //lee tipo de consulta
-        int opcion;
+        //lee tipo de consulta        
         do {
             System.out.println("///Ingrese su opcion///");
             oracion = entradaDelUsuario.readLine();
@@ -73,7 +73,9 @@ class Cliente {
         } while (opcion <= 0 || opcion >= 8);
 
         alServidor.println(oracion);
-
+        /*se utiliza la palabra clave OK para saber cuando el servidor dejara
+        de enviar datos, asi como el signo ? cuando se pide una entrada de datos
+        para interrumpir la recepcion de estos mismos*/
         //recibe respuestas respecto consultas
         echoSentence = entradaDelServidor.readLine();
         while (!echoSentence.equals("OK")) {

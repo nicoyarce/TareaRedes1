@@ -5,12 +5,12 @@ import java.net.*;
 class Cliente {
 
     public static void main(String argv[]) throws Exception {
-        String oracion;
+        String oracionTeclado;
         String echoSentence;
-        int opcion;
 
         //fijar entrada por teclado
         BufferedReader entradaDelUsuario = new BufferedReader(new InputStreamReader(System.in));
+        //enviar datos al servidor
         Socket clientSocket = new Socket("127.0.0.1", 7777);
         //enviar datos al servidor
         PrintWriter alServidor = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -21,20 +21,20 @@ class Cliente {
         do {
             System.out.println("Ingrese 1 si es usuario nuevo.");
             System.out.println("Ingrese 2 si es usuario existente.");
-            oracion = entradaDelUsuario.readLine();
-            if (!oracion.equals("1") && !oracion.equals("2")) {
+            oracionTeclado = entradaDelUsuario.readLine();
+            if (!oracionTeclado.equals("1") && !oracionTeclado.equals("2")) {
                 System.out.println("Ingrese opcion valida.");
             }
-        } while (!oracion.equals("1") && !oracion.equals("2"));
-        alServidor.println(oracion);
+        } while (!oracionTeclado.equals("1") && !oracionTeclado.equals("2"));
+        alServidor.println(oracionTeclado);
 
         System.out.println("Ingrese su nombre de usuario.");
-        oracion = entradaDelUsuario.readLine();
-        alServidor.println(oracion);
+        oracionTeclado = entradaDelUsuario.readLine();
+        alServidor.println(oracionTeclado);
 
         System.out.println("Ingrese su contraseña.");
-        oracion = entradaDelUsuario.readLine();
-        alServidor.println(oracion);
+        oracionTeclado = entradaDelUsuario.readLine();
+        alServidor.println(oracionTeclado);
 
         //recibe mensajes del servidor respecto al login
         echoSentence = entradaDelServidor.readLine();
@@ -47,52 +47,59 @@ class Cliente {
                 System.exit(0);
             }
             if (echoSentence.equals("?")) {
-                oracion = entradaDelUsuario.readLine();
-                alServidor.println(oracion);
+                oracionTeclado = entradaDelUsuario.readLine();
+                alServidor.println(oracionTeclado);
             }
             if (!echoSentence.equals("?")) {
                 System.out.println("servidor> " + echoSentence);
             }
             echoSentence = entradaDelServidor.readLine();
         }
-
-        //lee tipo de consulta        
-        do {
-            System.out.println("///Ingrese su opcion///");
-            oracion = entradaDelUsuario.readLine();
-            try {
-                opcion = Integer.parseInt(oracion);
-                if (opcion <= 0 || opcion >= 8) {
-                    opcion = -1;
+        /*se utiliza la palabra clave OK para saber cuando el servidor dejara
+        de enviar datos o la palabra BYE para revisar si hara mas consultas,
+        asi como el signo ? cuando se pide una entrada de datos para interrumpir
+        la recepcion de estos mismos*/
+        while (!echoSentence.equals("BYE")) {
+            //lee tipo de consulta
+            int opcion = 0;
+            do {
+                oracionTeclado = entradaDelUsuario.readLine();
+                try {
+                    opcion = Integer.parseInt(oracionTeclado);
+                    if (opcion <= 0 || opcion >= 8) {
+                        System.out.println("Ingrese del 1 al 7");
+                    }
+                } catch (NumberFormatException e) {
                     System.out.println("Ingrese del 1 al 7");
                 }
-            } catch (NumberFormatException e) {
-                opcion = -1;
-                System.out.println("Ingrese del 1 al 7");
-            }
-        } while (opcion <= 0 || opcion >= 8);
+            } while (opcion <= 0 || opcion >= 8);
 
-        alServidor.println(oracion);
-        /*se utiliza la palabra clave OK para saber cuando el servidor dejara
-        de enviar datos, asi como el signo ? cuando se pide una entrada de datos
-        para interrumpir la recepcion de estos mismos*/
-        //recibe respuestas respecto consultas
-        echoSentence = entradaDelServidor.readLine();
-        while (!echoSentence.equals("OK")) {
-            if (echoSentence.equals("?")) {
-                do {
-                    oracion = entradaDelUsuario.readLine();
-                    if (oracion.length() > 30) {
-                        System.out.println("Ingrese menos de 30 caracteres");
-                    }
-                } while (oracion.length() > 30);
-                alServidor.println(oracion);
-            }
-            if (!echoSentence.equals("?")) {
-                System.out.println("servidor> " + echoSentence);
-            }
+            alServidor.println(oracionTeclado);
+
+            //recibe respuestas respecto consultas
             echoSentence = entradaDelServidor.readLine();
+            while (!echoSentence.equals("OK")) {
+                if (echoSentence.equals("?")) {
+                    do {
+                        oracionTeclado = entradaDelUsuario.readLine();
+                        if (oracionTeclado.length() > 30) {
+                            System.out.println("Ingrese menos de 30 caracteres");
+                        }
+                    } while (oracionTeclado.length() > 30);
+                    alServidor.println(oracionTeclado);
+                }
+                if (!echoSentence.equals("?") && !echoSentence.equals("BYE")) {
+                    System.out.println("servidor> " + echoSentence);
+                }
+                if (echoSentence.equals("BYE")) {
+                    System.out.println("Conexion terminada");
+                    clientSocket.close();
+                    System.exit(0);
+                }
+                echoSentence = entradaDelServidor.readLine();
+            }
         }
+        System.out.println("Conexion terminada");
         clientSocket.close();
         System.exit(0);
     }

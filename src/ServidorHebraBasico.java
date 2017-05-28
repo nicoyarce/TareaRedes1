@@ -61,7 +61,8 @@ class ServidorHebraBasico extends Thread {
                         enviaAlCliente.println("No hay usuarios registrados.");
                         return;
                     }
-                    for (int i = 0; i < usuarios.size(); i++) {
+                    int i;
+                    for (i = 0; i < usuarios.size(); i++) {
                         if (usuarios.get(i).existeUsuario(nombre)) {
                             if (usuarios.get(i).claveEsCorrecta(clave)) {
                                 indiceUsuario = i;
@@ -71,10 +72,11 @@ class ServidorHebraBasico extends Thread {
                                 enviaAlCliente.println("Error en clave.");
                                 return;
                             }
-                        } else if (i == usuarios.size()) {
-                            enviaAlCliente.println("Usuario no encontrado.");
-                            return;
                         }
+                    }
+                    if (i == usuarios.size()) {
+                        enviaAlCliente.println("Usuario no encontrado.");
+                        return;
                     }
                     break;
             }
